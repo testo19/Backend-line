@@ -2,7 +2,9 @@ const line = require("@line/bot-sdk");
 const express = require("express");
 // const axios = require('axios').default
 const dotenv = require("dotenv");
-
+const mongoose = require("mongoose");
+const cors = require("cors");
+const https = require("https");
 // ! mongo db
 const Product = require("./models/product");
 const Member = require("./models/member");
@@ -11,61 +13,89 @@ const Patient = require("./models/patient");
 const Calendercase = require("./models/calendercase");
 const Calenderdoc = require("./models/calenderdoc");
 
-const mongoose = require("mongoose");
-mongoose.connect("mongodb://localhost:27017/proj", { useNewUrlParser: true });
-mongoose.connection.on("error", (err) => {
-  console.error("MongoDB error", err);
-});
-
 const env = dotenv.config().parsed;
 const app = express();
+
+// ! connect cloud database
+mongoose
+  .connect("mongodb://localhost:27017/proj", {
+    useNewUrlParser: true,
+    useUnifiedTopology: false,
+  })
+  .then(() => console.log("database connected"))
+  .catch((err) => console.log(err));
+
+// ! middle ware
+app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
+app.use(cors());
+// app.use(morgan("dev"));
+
+const port = process.env.PORT || 4000;
+app.listen(port, () => console.log(`start server in port ${port}`));
+
+// const mongoose = require("mongoose");
+// mongoose.connect("mongodb://localhost:27017/proj", { useNewUrlParser: true });
+// mongoose.connection.on("error", (err) => {
+//   console.error("MongoDB error", err);
+// });
+
 // console.log(env);
+// app.use(express.json());
+
+// const http = require('http');
+// const requestListener = function (req, res) {
+//   res.writeHead(200);
+//   res.end('Hello, World!');
+// }
+// const server = http.createServer(requestListener);
+// server.listen(4000);
 
 // ! line
+
+
 
 const lineConfig = {
   channelAccessToken: env.ACCESS_TOKEN,
   channelSecret: env.SECRET_TOKEN,
 };
+console.log(lineConfig);
+// app.use(middleware(lineConfig))
+// const client = new line.Client(lineConfig);
+// app.use(bodyParser.json())
 const client = new line.Client(lineConfig);
-app.post("/webhook", line.middleware(lineConfig), async (req, res) => {
+app.post("/webhook" ,async (req, res)=> {
+
   try {
-    const events = req.body.events;
-    console.log("event=>>>>", events);
-    // return handleEvent(events[0])
-    return events.length > 0 ? await events.map((item) => handleEvent(item))  : res.status(200).send("OK");
-  } catch (error) {
-    res.status(500).end();
+    // res.send("HTTP POST request sent to the webhook URL!");
+    console.log(req.body.events);
+    const event = req.body.events[0]
+    var msg = {
+      type: 'text',
+      text: ''
   }
-});
-const handleEvent = async (event) => {
+    
+    const patient = await Patient.find({pastsportid:event.message.text})
+    console.log(patient);
+    patient.length>0 ? msg.text = patient[0].firstname : msg.text ='ควยไรอ่า'
+    
+   client.replyMessage(req.body.events[0].replyToken, msg);
+  } catch (error) {
+    console.log(error);
+  }
+  
+})
 
-    const IDCardLen = event.message.text.length
-    let content =''
-    if(IDCardLen == 13){
-        content = 'SUCCESS'
-    }else{
-        content= "โปรดกรอกเลขบัตรประชาชนอีกครั้งค่ะ"
-    }
-
-
-  // console.log(event);
-//   const Patients = await Patient.find({
-//       age:event.message.text
-//   });
-//   const pantient = Patients[0]
-
-//   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-//  const textToSend = `${pantient.firstname} ${pantient.lastname} ${new Date(pantient.birthday).toLocaleDateString(undefined, options)}`
-  console.log(content);
-  return client.replyMessage(event.replyToken, { type: "text", text: content });
-};
-app.listen(env.PORT || 4000, () => {
-  console.log("listening on 4000");
-});
 
 //   ! api
 
+app.get("/", async (req, res) => {
+  res.send("ควย");
+});
 app.get("/products", async (req, res) => {
   const products = await Product.find({});
   res.json(products);
