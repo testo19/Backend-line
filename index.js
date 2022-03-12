@@ -12,6 +12,7 @@ const Heal = require("./models/heal");
 const Patient = require("./models/patient");
 const Calendercase = require("./models/calendercase");
 const Calenderdoc = require("./models/calenderdoc");
+const Meetdate = require("./models/meetdate");
 
 const env = dotenv.config().parsed;
 const app = express();
@@ -72,20 +73,52 @@ app.post("/webhook" ,async (req, res)=> {
 
   try {
     // res.send("HTTP POST request sent to the webhook URL!");
-    console.log(req.body.events);
+    // console.log(req.body.events);
+   
     const event = req.body.events[0]
+
+    // console.log(event.message.contentProvider);
+   
+    console.log(req.body);
     var msg = {
       type: 'text',
-      text: ''
+      text: '',
+      wrap: true
   }
     
-    const patient = await Patient.find({pastsportid:event.message.text})
-    console.log(patient);
-    patient.length>0 ? msg.text = patient[0].firstname : msg.text ='ควยไรอ่า'
     
-   client.replyMessage(req.body.events[0].replyToken, msg);
+    
+    // patient.length==13 ? msg.text = "คุณ "+ patient[0].firstname +" "+ patient[0].lastname +" มีนัดวัน " + events.toLocaleDateString('th-th', options) : msg.text ='กรุณากรอกเลขบัตรประชาชนให้ถูกต้อง'
+  //  console.log(msg.text);
+  if(event.message.text.length==13){
+
+    const patient = await Patient.find({pastsportid:event.message.text})
+   
+    if(patient.length>0){
+      const date = new Date((patient[0].birthday));
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      // console.log(date.toLocaleDateString('th-th', options));
+      // console.log(patient);
+     msg.text = "คุณ "+ patient[0].firstname +" "+ patient[0].lastname +" มีนัดวัน " + date.toLocaleDateString('th-th', options)
+     
+     client.replyMessage(event.replyToken, msg);
+    }else{
+    msg.text = 'กรุณากรอกเลขบัตรประชาชนให้ถูกต้อง'
+    client.replyMessage(event.replyToken, msg);
+    }
+
+  }else{
+    msg.text = 'กรุณากรอกเลขบัตรประชาชนให้ถูกต้องนะจ๊ะ'
+    client.replyMessage(event.replyToken, msg);
+
+
+  }
+ 
+
+  //  client.replyMessage(req.body.events[0].replyToken, msg);
   } catch (error) {
     console.log(error);
+    
   }
   
 })
@@ -301,5 +334,45 @@ app.put("/calenderdocs/:id", async (req, res) => {
 app.delete("/calenderdocs/:id", async (req, res) => {
   const { id } = req.params;
   await Calenderdoc.findByIdAndDelete(id);
+  res.status(204).end();
+});
+
+app.get("/meetdates", async (req, res) => {
+  const meetdates = await Meetdate.find({});
+  res.json(meetdates);
+});
+
+app.get("/meetdates/:id", async (req, res) => {
+  const { id } = req.params;
+  const meetdate = await Meetdate.findById(id);
+  res.json(meetdate);
+});
+
+app.get("/meetdatesByPatient/:id", async (req, res) => {
+  const { id } = req.params;
+  const idpat = {
+    idpatient: id,
+  };
+  const meetdate = await Meetdate.find(idpat);
+  res.json(meetdate);
+});
+
+app.post("/meetdates", async (req, res) => {
+  const payload = req.body;
+  const meetdate = new Meetdate(payload);
+  await meetdate.save();
+  res.status(201).end();
+});
+
+app.put("/meetdates/:id", async (req, res) => {
+  const payload = req.body;
+  const { id } = req.params;
+  const meetdate = await Meetdate.findByIdAndUpdate(id, { $set: payload });
+  res.json(meetdate);
+});
+
+app.delete("/meetdates/:id", async (req, res) => {
+  const { id } = req.params;
+  await Meetdate.findByIdAndDelete(id);
   res.status(204).end();
 });
