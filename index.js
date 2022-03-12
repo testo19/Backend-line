@@ -80,6 +80,7 @@ app.post("/webhook" ,async (req, res)=> {
     // console.log(event.message.contentProvider);
    
     console.log(req.body);
+    //การประกาศ object
     var msg = {
       type: 'text',
       text: '',
@@ -103,12 +104,14 @@ app.post("/webhook" ,async (req, res)=> {
      
      client.replyMessage(event.replyToken, msg);
     }else{
-    msg.text = 'กรุณากรอกเลขบัตรประชาชนให้ถูกต้อง'
+      //การกำหนดค่า object
+    msg.text= 'กรุณาพิมพ์เลขบัตรประชาชนให้ถูกต้อง'
+    
     client.replyMessage(event.replyToken, msg);
     }
 
   }else{
-    msg.text = 'กรุณากรอกเลขบัตรประชาชนให้ถูกต้องนะจ๊ะ'
+    msg.text = 'กรุณาพิมพ์เลขบัตรประชาชน'
     client.replyMessage(event.replyToken, msg);
 
 
