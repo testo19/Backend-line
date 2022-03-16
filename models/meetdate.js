@@ -3,17 +3,9 @@ const Schema = mongoose.Schema
 const meetdateSchema = new Schema({
     firstname: String,
     lastname: String,
-    gender: String,
     pastsportid: String,
-    birthday: Date,
-    age: String,
-    address: String,
-    disease: String,
-    drugAllergy: String,
-    phonenumber: String,
-    annotation: String,
-    statuscase: Number,
     meetdateperson:Date,
+    namedoctor:String,
 
 },
     { timestamps: true, versionKey: false }

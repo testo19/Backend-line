@@ -93,14 +93,21 @@ app.post("/webhook" ,async (req, res)=> {
   //  console.log(msg.text);
   if(event.message.text.length==13){
 
-    const patient = await Patient.find({pastsportid:event.message.text})
+    const meetdatedata = await Meetdate.find({pastsportid:event.message.text})
    
-    if(patient.length>0){
-      const date = new Date((patient[0].birthday));
+    if(meetdatedata.length>0){
+     // .reverse()
+      const meetdate = meetdatedata.reverse();
+      const date = new Date((meetdate[0].meetdateperson));
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const datehours = new Date((meetdate[0].meetdateperson));
+      const datemins = new Date((meetdate[0].meetdateperson));
+      console.log(meetdate);
+
       // console.log(date.toLocaleDateString('th-th', options));
-      // console.log(patient);
-     msg.text = "คุณ "+ patient[0].firstname +" "+ patient[0].lastname +" มีนัดวัน " + date.toLocaleDateString('th-th', options)
+      // console.log(meetdate);
+     
+     msg.text = " คุณ"+ meetdate[0].firstname +" "+ meetdate[0].lastname +"\n มีนัด " + date.toLocaleDateString('th-th', options) + "\n เวลา " + date.toLocaleTimeString('th-th') +" น."+"\n นพ."+meetdate[0].namedoctor
      
      client.replyMessage(event.replyToken, msg);
     }else{
