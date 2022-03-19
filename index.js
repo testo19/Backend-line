@@ -1,3 +1,4 @@
+const ThaiSmartcardReader = require("thai-smartcard-reader");
 const line = require("@line/bot-sdk");
 const express = require("express");
 // const axios = require('axios').default
@@ -39,6 +40,9 @@ app.use(cors());
 const port = process.env.PORT || 4000;
 app.listen(port, () => console.log(`start server in port ${port}`));
 
+
+
+
 // const mongoose = require("mongoose");
 // mongoose.connect("mongodb://localhost:27017/proj", { useNewUrlParser: true });
 // mongoose.connection.on("error", (err) => {
@@ -58,8 +62,6 @@ app.listen(port, () => console.log(`start server in port ${port}`));
 
 // ! line
 
-
-
 const lineConfig = {
   channelAccessToken: env.ACCESS_TOKEN,
   channelSecret: env.SECRET_TOKEN,
@@ -69,70 +71,76 @@ console.log(lineConfig);
 // const client = new line.Client(lineConfig);
 // app.use(bodyParser.json())
 const client = new line.Client(lineConfig);
-app.post("/webhook" ,async (req, res)=> {
-
+app.post("/webhook", async (req, res) => {
   try {
     // res.send("HTTP POST request sent to the webhook URL!");
     // console.log(req.body.events);
-   
-    const event = req.body.events[0]
+
+    const event = req.body.events[0];
 
     // console.log(event.message.contentProvider);
-   
+
     console.log(req.body);
     //การประกาศ object
     var msg = {
-      type: 'text',
-      text: '',
-      wrap: true
-  }
-    
-    
-    
+      type: "text",
+      text: "",
+      wrap: true,
+    };
+
     // patient.length==13 ? msg.text = "คุณ "+ patient[0].firstname +" "+ patient[0].lastname +" มีนัดวัน " + events.toLocaleDateString('th-th', options) : msg.text ='กรุณากรอกเลขบัตรประชาชนให้ถูกต้อง'
-  //  console.log(msg.text);
-  if(event.message.text.length==13){
+    //  console.log(msg.text);
+    if (event.message.text.length == 13) {
+      const meetdatedata = await Meetdate.find({
+        pastsportid: event.message.text,
+      });
 
-    const meetdatedata = await Meetdate.find({pastsportid:event.message.text})
-   
-    if(meetdatedata.length>0){
-     // .reverse()
-      const meetdate = meetdatedata.reverse();
-      const date = new Date((meetdate[0].meetdateperson));
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const datehours = new Date((meetdate[0].meetdateperson));
-      const datemins = new Date((meetdate[0].meetdateperson));
-      
+      if (meetdatedata.length > 0) {
+        // .reverse()
+        const meetdate = meetdatedata.reverse();
+        const date = new Date(meetdate[0].meetdateperson);
+        const options = {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        };
+        const datehours = new Date(meetdate[0].meetdateperson);
+        const datemins = new Date(meetdate[0].meetdateperson);
 
-      // console.log(date.toLocaleDateString('th-th', options));
-      // console.log(meetdate);
-     
-     msg.text = " คุณ"+ meetdate[0].firstname +" "+ meetdate[0].lastname +"\n มีนัด " + date.toLocaleDateString('th-th', options) + "\n เวลา " + date.toLocaleTimeString('th-th') +" น."+"\n นพ."+meetdate[0].namedoctor
-     
-     client.replyMessage(event.replyToken, msg);
-    }else{
-      //การกำหนดค่า object
-    msg.text= 'กรุณาพิมพ์เลขบัตรประชาชนให้ถูกต้อง'
-    
-    client.replyMessage(event.replyToken, msg);
+        // console.log(date.toLocaleDateString('th-th', options));
+        // console.log(meetdate);
+
+        msg.text =
+          " คุณ" +
+          meetdate[0].firstname +
+          " " +
+          meetdate[0].lastname +
+          "\n มีนัด " +
+          date.toLocaleDateString("th-th", options) +
+          "\n เวลา " +
+          date.toLocaleTimeString("th-th") +
+          " น." +
+          "\n นพ." +
+          meetdate[0].namedoctor;
+
+        client.replyMessage(event.replyToken, msg);
+      } else {
+        //การกำหนดค่า object
+        msg.text = "กรุณาพิมพ์เลขบัตรประชาชนให้ถูกต้อง";
+
+        client.replyMessage(event.replyToken, msg);
+      }
+    } else {
+      msg.text = "กรุณาพิมพ์เลขบัตรประชาชน";
+      client.replyMessage(event.replyToken, msg);
     }
 
-  }else{
-    msg.text = 'กรุณาพิมพ์เลขบัตรประชาชน'
-    client.replyMessage(event.replyToken, msg);
-
-
-  }
- 
-
-  //  client.replyMessage(req.body.events[0].replyToken, msg);
+    //  client.replyMessage(req.body.events[0].replyToken, msg);
   } catch (error) {
     console.log(error);
-    
   }
-  
-})
-
+});
 
 //   ! api
 
