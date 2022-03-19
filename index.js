@@ -102,7 +102,7 @@ app.post("/webhook" ,async (req, res)=> {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const datehours = new Date((meetdate[0].meetdateperson));
       const datemins = new Date((meetdate[0].meetdateperson));
-      console.log(meetdate);
+      
 
       // console.log(date.toLocaleDateString('th-th', options));
       // console.log(meetdate);
