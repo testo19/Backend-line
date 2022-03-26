@@ -14,6 +14,7 @@ const patientSchema = new Schema({
     phonenumber: String,
     annotation: String,
     statuscase: Number,
+    
 
 },
     { timestamps: true, versionKey: false }
