@@ -121,7 +121,7 @@ app.post("/webhook", async (req, res) => {
           "\n เวลา " +
           date.toLocaleTimeString("th-th") +
           " น." +
-          "\n นพ." +
+          "\n ทพ." +
           meetdate[0].namedoctor;
 
         client.replyMessage(event.replyToken, msg);

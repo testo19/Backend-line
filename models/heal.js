@@ -10,6 +10,7 @@ const healSchema = new Schema({
     historyrestore: [],
     historyrestore2: [],
     healdate: Date,
+    annotation: String,
 
 },
     { timestamps: true, versionKey: false }
